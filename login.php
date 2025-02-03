@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'conexao.php';
 
 // Verifica login
@@ -10,8 +11,19 @@ if (isset($_POST['login'])) {
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
-        $_SESSION['usuario'] = $usuario;
-        header("Location: index.php"); 
+        $row = $result->fetch_assoc();
+        $_SESSION['usuario_id'] = $row['id'];
+        $_SESSION['usuario_nome'] = $row['usuario'];
+
+        if ($usuario == 'fatima') {
+            // Redireciona para o painel completo (Fátima)
+            header('Location: index.php'); 
+        } elseif ($usuario == 'user') {
+            // Redireciona para a página de financeiro com limitações (User)
+            header('Location: financeiro.php'); 
+        } else {
+            echo "Usuário não autorizado!";
+        }
         exit();
     } else {
         $erro = "Usuário ou senha incorretos!";
@@ -19,7 +31,7 @@ if (isset($_POST['login'])) {
 }
 
 // Redireciona para login se não estiver logado
-if (!isset($_SESSION['usuario'])) {
+if (!isset($_SESSION['usuario_nome'])) {
     ?>
     <!DOCTYPE html>
     <html lang="pt">
@@ -56,8 +68,10 @@ if (!isset($_SESSION['usuario'])) {
 
 <div class="container">
     <h2>Painel Administrativo</h2>
-    <a href="clientes.php" class="btn">Gerenciar Clientes</a>
-    <a href="financeiro.php" class="btn">Gerenciar Financeiro</a>
+    <?php if ($_SESSION['usuario_nome'] == 'fatima') { ?>
+        <a href="clientes.php" class="btn">Gerenciar Clientes</a>
+        <a href="financeiro.php" class="btn">Gerenciar Financeiro</a>
+    <?php } ?>
     <a href="logout.php" class="btn btn-danger">Sair</a>
 </div>
 
